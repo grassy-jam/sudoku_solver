@@ -3,11 +3,23 @@ default: sudokuSolver
 sudokuSolver: sudoku.o main.c
 	gcc -o sudokuSolver main.c sudoku.o
 
-sudoku.o: sudoku.c sudoku.h
-	gcc -c -o sudoku.o sudoku.c
+arrayHelpers.o: arrayHelpers.c arrayHelpers.h
+	gcc -c -o arrayHelpers.o arrayHelpers.c
+cell.o: cell.c cell.h
+	gcc -c -o cell.o cell.c
+cellPriorityQueue.o: cellPriorityQueue.c cellPriorityQueue.h
+	gcc -c -o cellPriorityQueue.o cellPriorityQueue.h
+decisionNode.o: decisionNode.c decisionNode.h
+	gcc -c -o decisionNode.o decisionNode.c
+decisionTree.o: decisionTree.c decisionTree.h
+	gcc -c -o decisionTree.o decisionTree.c
+sudokuBoard.o: sudokuBoard.c sudokuBoard.h
+	gcc -c -o sudokuBoard.o sudokuBoard.h
+sudoku.o: arrayHelpers.o cell.o cellPriorityQueue.o decisionNode.o decisionTree.o sudokuBoard.o
+	gcc -o sudoku.o arrayHelpers.o cell.o cellPriorityQueue.o decisionNode.o decisionTree.o sudokuBoard.o
 
 clean:
-	rm -f sudoku.o sudokuSolver
+	rm -f *.o sudokuSolver
 
 run: sudokuSolver input.sudoku
 	./sudokuSolver

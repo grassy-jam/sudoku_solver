@@ -6,6 +6,10 @@
 #ifndef SUDOKU_BOARD_H
 #define SUDOKU_BOARD_H
 
+#include "cell.h"
+#include "cellPriorityQueue.h"
+#include "decisionTree.h"
+
 typedef struct SudokuBoard {
   Cell ***board;
   int size;
@@ -41,7 +45,7 @@ void crossCellVectors(SBoard *board, int row, int col);
 void setPossibleCellValues(SBoard *board);
 void resetPossibleCellValues(SBoard *board, int row, int col);
 bool fillSingleChoiceCells(SBoard *board);
-void initialFindAndPrine(SBoard *board);
+void initialFindAndPrune(SBoard *board);
 
 void setEmptyCells(SBoard *board);
 bool solveEmptyCells(SBoard *board, DTree *dTree);

@@ -6,6 +6,8 @@
 #ifndef DTREE_H
 #define DTREE_H
 
+#include "decisionNode.h"
+
 typedef struct DecisionTree {
   DNode *curr;
   DNode *root;
