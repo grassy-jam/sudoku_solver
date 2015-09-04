@@ -8,6 +8,15 @@
   This will print the initial board "problem" and then print the solved board (or simply say that there is no solution if there is none)
 */
 
+
+#include "bool.h"
+
+#include "arrayHelpers.h"
+#include "cell.h"
+#include "cellPriorityQueue.h"
+#include "decisionNode.h"
+#include "decisionTree.h"
+#include "sudokuBoard.h"
 #include "sudoku.h"
 
 int main(int argc, char *argv[]) {
