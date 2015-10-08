@@ -1,5 +1,7 @@
 default: sudokuSolver
 
+ca_sudokuSolver: ca_sudoku.c
+	gcc -o ca_sudokuSolver ca_sudoku.c
 sudokuSolver: sudoku.o main.c
 	gcc -o sudokuSolver main.c sudoku.o
 
@@ -19,7 +21,9 @@ sudoku.o: arrayHelpers.o cell.o cellPriorityQueue.o decisionNode.o decisionTree.
 	gcc -o sudoku.o arrayHelpers.o cell.o cellPriorityQueue.o decisionNode.o decisionTree.o sudokuBoard.o
 
 clean:
-	rm -f *.o sudokuSolver
+	rm -f *.o sudokuSolver ca_sudokuSolver
 
 run: sudokuSolver input.sudoku
 	./sudokuSolver
+ca_run: ca_sudokuSolver input.sudoku
+	./ca_sudokuSolver
