@@ -1,5 +1,7 @@
 default: sudokuSolver
 
+ca: ca_sudokuSolver
+
 ca_sudokuSolver: ca_sudoku.c
 	gcc -o ca_sudokuSolver ca_sudoku.c
 sudokuSolver: sudoku.o main.c
