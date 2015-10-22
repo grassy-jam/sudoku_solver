@@ -4,9 +4,10 @@ ca: ca_sudokuSolver
 
 CC = gcc
 CFLAGS = -std=c99 -pedantic -Wall
+DEBUG = -g
 
 ca_sudokuSolver: ca_sudoku.c
-	$(CC) $(CFLAGS) -o ca_sudokuSolver ca_sudoku.c
+	$(CC) $(CFLAGS) $(DEBUG) -o ca_sudokuSolver ca_sudoku.c
 sudokuSolver: sudoku.o main.c
 	$(CC) $(CFLAGS) -o sudokuSolver main.c sudoku.o
 
