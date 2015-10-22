@@ -2,10 +2,13 @@ default: sudokuSolver
 
 ca: ca_sudokuSolver
 
+CC = gcc
+CFLAGS = -std=c99 -pedantic -Wall
+
 ca_sudokuSolver: ca_sudoku.c
-	gcc -o ca_sudokuSolver ca_sudoku.c
+	$(CC) $(CFLAGS) -o ca_sudokuSolver ca_sudoku.c
 sudokuSolver: sudoku.o main.c
-	gcc -o sudokuSolver main.c sudoku.o
+	$(CC) $(CFLAGS) -o sudokuSolver main.c sudoku.o
 
 arrayHelpers.o: arrayHelpers.c arrayHelpers.h
 	gcc -c -o arrayHelpers.o arrayHelpers.c

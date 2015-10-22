@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-const int X = 9;
-const int Y = 9;
+#define X 9
+#define Y 9
 typedef struct Board {
   int *B; //Will be an |X*Y| array, where each value represents a tile on the board
   int *deltaB; //Will be the updates to be applied to the array
@@ -42,7 +42,17 @@ Board *Board_create() {
   Board *b;
   int i;
   // Use this to initialize the board
-  int B[X*Y] = {1,2,3,4,0,0,0,0,9,4,0,0,0,8,0,0,2,0,0,0,0,1,0,0,4,0,6,0,0,0,0,6,0,0,9,0,5,0,7,0,0,0,0,0,4,0,0,1,0,0,0,0,0,0,0,8,9,0,0,6,0,0,0,0,0,0,0,5,0,1,0,0,0,0,0,0,0};
+  int B[X*Y] = {
+    1,2,3,4,0,0,0,0,9,
+    4,0,0,0,8,0,0,2,0,
+    0,0,0,1,0,0,4,0,6,
+    0,0,0,0,6,0,0,9,0,
+    5,0,7,0,0,0,0,0,4,
+    0,0,1,0,0,0,0,0,0,
+    0,8,9,0,0,6,0,0,0,
+    0,0,0,0,5,0,1,0,0,
+    0,0,0,0,0,0,0,0,0
+  };
 
   b = malloc(sizeof(Board));
   b->B = malloc(sizeof(int) * X * Y);
@@ -138,8 +148,8 @@ int Board_cellIsWritable(int index, Board *b) {
   }
 }
 
-//Returns a dynamic array with all the neighbour values of the cell at the given index
-//TODO: Complete getCellNeighbourValues
+//Returns an array with the count of all neighbour values for a given index
+//TODO: Complete getCellNeighbourValues (need to finish SS neighbour finding)
 Cell_state *Board_getCellNeighbourValues(int index, Board *b) {
   int n; //# of neighbours
   int curr;
@@ -147,6 +157,7 @@ Cell_state *Board_getCellNeighbourValues(int index, Board *b) {
               C[Y-1],
               SS[X-1]; //X-1 or Y-1 could work
   Cell_state *neighbourValues;
+  int numFound[X]; //use to count the # of 1..9 found in neighbours (indices 0..8 for values 1..9)
   int r, c, x, y;
   int nx, ny;
   int i;
@@ -156,24 +167,233 @@ Cell_state *Board_getCellNeighbourValues(int index, Board *b) {
   // Get 2d index y value from 1D index value
   y = index / X;
 
+  //Initialize numFound
+  for (i = 0; i < X; i++) { numFound[i] = 0; }
+
   //Find the Row neighbours
-  curr = 0;
-  for (r = 0; r < X; r++) {
-    if (r != x) {
-      R[curr] = b->B[cellIndex(r, y)];
-      curr++;
+  // neighbours 0..x
+  for (c = 0; c < x; c++) {
+    switch(b->B[cellIndex(c, y)]) {
+      case ONE:
+      case R_ONE:
+        numFound[0]++; 
+        break;
+      case TWO:
+      case R_TWO:
+        numFound[1]++;
+        break;
+      case THREE:
+      case R_THREE:
+        numFound[2]++;
+        break;
+      case FOUR:
+      case R_FOUR:
+        numFound[3]++;
+        break;
+      case FIVE:
+      case R_FIVE:
+        numFound[4]++;
+        break;
+      case SIX:
+      case R_SIX:
+        numFound[5]++;
+        break;
+      case SEVEN:
+      case R_SEVEN:
+        numFound[6]++;
+        break;
+      case EIGHT:
+      case R_EIGHT:
+        numFound[7]++;
+        break;
+      case NINE:
+      case R_NINE:
+        numFound[8]++;
+        break;
+    }
+  }
+  // neighbours x+1..X-1
+  for (c = x+1; c < X; c++) {
+    switch(b->B[cellIndex(c, y)]) {
+      case ONE:
+      case R_ONE:
+        numFound[0]++; 
+        break;
+      case TWO:
+      case R_TWO:
+        numFound[1]++;
+        break;
+      case THREE:
+      case R_THREE:
+        numFound[2]++;
+        break;
+      case FOUR:
+      case R_FOUR:
+        numFound[3]++;
+        break;
+      case FIVE:
+      case R_FIVE:
+        numFound[4]++;
+        break;
+      case SIX:
+      case R_SIX:
+        numFound[5]++;
+        break;
+      case SEVEN:
+      case R_SEVEN:
+        numFound[6]++;
+        break;
+      case EIGHT:
+      case R_EIGHT:
+        numFound[7]++;
+        break;
+      case NINE:
+      case R_NINE:
+        numFound[8]++;
+        break;
     }
   }
 
   //Find the Col neighbours
-  curr = 0;
-  for (c = 0; c < Y; c++) {
-    if (c != y) {
-      R[curr] = b->B[cellIndex(x, c)];
-      curr++;
+  // neighbours 0..y
+  for (r = 0; r < y; r++) {
+    switch(b->B[cellIndex(x, r)]) {
+      case ONE:
+      case R_ONE:
+        numFound[0]++; 
+        break;
+      case TWO:
+      case R_TWO:
+        numFound[1]++;
+        break;
+      case THREE:
+      case R_THREE:
+        numFound[2]++;
+        break;
+      case FOUR:
+      case R_FOUR:
+        numFound[3]++;
+        break;
+      case FIVE:
+      case R_FIVE:
+        numFound[4]++;
+        break;
+      case SIX:
+      case R_SIX:
+        numFound[5]++;
+        break;
+      case SEVEN:
+      case R_SEVEN:
+        numFound[6]++;
+        break;
+      case EIGHT:
+      case R_EIGHT:
+        numFound[7]++;
+        break;
+      case NINE:
+      case R_NINE:
+        numFound[8]++;
+        break;
+    }
+  }
+  // neighbours y+1..Y-1
+  for (r = y+1; r < Y; r++) {
+    switch(b->B[cellIndex(x, r)]) {
+      case ONE:
+      case R_ONE:
+        numFound[0]++; 
+        break;
+      case TWO:
+      case R_TWO:
+        numFound[1]++;
+        break;
+      case THREE:
+      case R_THREE:
+        numFound[2]++;
+        break;
+      case FOUR:
+      case R_FOUR:
+        numFound[3]++;
+        break;
+      case FIVE:
+      case R_FIVE:
+        numFound[4]++;
+        break;
+      case SIX:
+      case R_SIX:
+        numFound[5]++;
+        break;
+      case SEVEN:
+      case R_SEVEN:
+        numFound[6]++;
+        break;
+      case EIGHT:
+      case R_EIGHT:
+        numFound[7]++;
+        break;
+      case NINE:
+      case R_NINE:
+        numFound[8]++;
+        break;
     }
   }
 
+  //TODO: Fix Find the SS neighbours
+  /*
+    We find the SS neighbours by determining which cell index this
+    cell is at, relative to its own neighbours, e.g. 0..8 in
+      0 1 2
+      3 4 5
+      6 7 8
+    Given this index, we have the offsets for each of the neighbours
+  */
+  if (index == 0 || index == 3 || index == 6 ||
+      index == 17 || index == 30 || index == 33 ||
+      index == 54 || index == 57 || index == 60) {
+    //at index 0
+    //check +10, +11, +19, +20
+  } else if (index == 1 || index == 4 || index == 7 ||
+      index == 28 || index == 31 || index == 34 ||
+      index == 55 || index == 58 || index == 61) {
+    //at index 1
+    //check +8, +10, +17, +19
+  } else if (index == 2 || index == 5 || index == 8 ||
+      index == 29 || index == 31 || index == 35 ||
+      index == 56 || index == 59 || index == 62) {
+    //at index 2
+    //check +7, +8, +16, +17
+  } else if (index == 9 || index == 12 || index == 15 ||
+      index == 36 || index == 39 || index == 42 ||
+      index == 63 || index == 66 || index == 69) {
+    //at index 3
+    //check -8, -7, +10, +11
+  } else if (index == 10 || index == 13 || index == 16 ||
+      index == 37 || index == 40 || index == 43 ||
+      index == 64 || index == 67 || index == 70) {
+    //at index 4
+    //check -10, -8, +8, +10
+  } else if (index == 11 || index == 14 || index == 17 ||
+      index == 38 || index == 41 || index == 44 ||
+      index == 65 || index == 68 || index == 71) {
+    //at index 5
+    //check -11, -10, +7, +8
+  } else if (index == 18 || index == 21 || index == 24 ||
+      index == 45 || index == 48 || index == 51 ||
+      index == 72 || index == 75 || index == 78) {
+    //at index 6
+    //check -17, -16, -8, -7
+  } else if (index == 19 || index == 22 || index == 25 ||
+      index == 46 || index == 49 || index == 52 ||
+      index == 73 || index == 76 || index == 79) {
+    //at index 7
+    //check -19, -17, -10, -8
+  } else if (index == 20 || index == 23 || index == 26 ||
+      index == 47 || index == 50 || index == 53 ||
+      index == 74 || index == 77 || index == 80) {
+    //at index 8
+    //check -20, -19, -11, -10
+  }
+  /*
   //Find the SS neighbours
   curr = 0;
   if (x <= 2) {
@@ -297,147 +517,11 @@ Cell_state *Board_getCellNeighbourValues(int index, Board *b) {
       }
     }
   }
+  */
   
   n = 1;
 
-  neighbourValues = malloc(sizeof(Cell_state) * X); //or * Y, it is the number of taken values
-
-  //neighbourValues is a count of values 1..9 at indexes 0..8
-  for (i = 0; i < X; i++) {
-    neighbourValues[i] = 0;
-  }
-
-  for (i = 0; i < X; i++) {
-    switch(R[i]) {
-      case ONE:
-      case R_ONE:
-        neighbourValues[0]++;
-        break;
-      case TWO:
-      case R_TWO:
-        neighbourValues[1]++;
-        break;
-      case THREE:
-      case R_THREE:
-        neighbourValues[2]++;
-        break;
-      case FOUR:
-      case R_FOUR:
-        neighbourValues[3]++;
-        break;
-      case FIVE:
-      case R_FIVE:
-        neighbourValues[4]++;
-        break;
-      case SIX:
-      case R_SIX:
-        neighbourValues[5]++;
-        break;
-      case SEVEN:
-      case R_SEVEN:
-        neighbourValues[6]++;
-        break;
-      case EIGHT:
-      case R_EIGHT:
-        neighbourValues[7]++;
-        break;
-      case NINE:
-      case R_NINE:
-        neighbourValues[8]++;
-        break;
-      default:
-        //do nothing
-        break;
-    }
-  }
-  for (i = 0; i < X; i++) {
-    switch(C[i]) {
-      case ONE:
-      case R_ONE:
-        neighbourValues[0]++;
-        break;
-      case TWO:
-      case R_TWO:
-        neighbourValues[1]++;
-        break;
-      case THREE:
-      case R_THREE:
-        neighbourValues[2]++;
-        break;
-      case FOUR:
-      case R_FOUR:
-        neighbourValues[3]++;
-        break;
-      case FIVE:
-      case R_FIVE:
-        neighbourValues[4]++;
-        break;
-      case SIX:
-      case R_SIX:
-        neighbourValues[5]++;
-        break;
-      case SEVEN:
-      case R_SEVEN:
-        neighbourValues[6]++;
-        break;
-      case EIGHT:
-      case R_EIGHT:
-        neighbourValues[7]++;
-        break;
-      case NINE:
-      case R_NINE:
-        neighbourValues[8]++;
-        break;
-      default:
-        //do nothing
-        break;
-    }
-  }
-  for (i = 0; i < X; i++) {
-    switch(SS[i]) {
-      case ONE:
-      case R_ONE:
-        neighbourValues[0]++;
-        break;
-      case TWO:
-      case R_TWO:
-        neighbourValues[1]++;
-        break;
-      case THREE:
-      case R_THREE:
-        neighbourValues[2]++;
-        break;
-      case FOUR:
-      case R_FOUR:
-        neighbourValues[3]++;
-        break;
-      case FIVE:
-      case R_FIVE:
-        neighbourValues[4]++;
-        break;
-      case SIX:
-      case R_SIX:
-        neighbourValues[5]++;
-        break;
-      case SEVEN:
-      case R_SEVEN:
-        neighbourValues[6]++;
-        break;
-      case EIGHT:
-      case R_EIGHT:
-        neighbourValues[7]++;
-        break;
-      case NINE:
-      case R_NINE:
-        neighbourValues[8]++;
-        break;
-      default:
-        //do nothing
-        break;
-    }
-  }
-
-  return neighbourValues;
+  return numFound;
 }
 
 //Returns true if the cell is valid based on its neighbour values,
@@ -450,6 +534,12 @@ int cellIsValid(int index, Board *b) {
 
   //neighbours will get memory allocated, we are responsible to free
   neighbours = Board_getCellNeighbourValues(index, b);
+
+  printf("This cell's neighbours are...\n");
+  for (i = 0; i < X; i++) {
+    printf("%d: %d, ", i+1, neighbours[i]);
+  }
+  printf("\n");
 
   if (!Board_cellIsWritable(index, b)) {
     return 1; //assume that it is valid, we can't change it anyways
@@ -508,6 +598,7 @@ int Board_isValid(Board *b) {
   int x, y;
   for (x = 0; x < X; x++) {
     for (y = 0; y < Y; y++) {
+      printf("Validating cell %d (%d, %d)\n", cellIndex(x, y), x, y);
       if (!cellIsValid(cellIndex(x, y), b)) {
         return 0;
       }
