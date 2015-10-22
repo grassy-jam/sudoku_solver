@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 void usage();
 
@@ -521,6 +522,9 @@ Cell_state Board_cellAvailableValue(int index, Board *b) {
             state = ONE;
           } else {
             //TODO: Gamble for state
+            if (rand() % X > (X/2)) {
+              state = ONE;
+            }
           }
           break;
         case 1:
@@ -528,6 +532,9 @@ Cell_state Board_cellAvailableValue(int index, Board *b) {
             state = TWO;
           } else {
             //TODO: Gamble for state
+            if (rand() % X > (X/2)) {
+              state = TWO;
+            }
           }
           break;
         case 2:
@@ -535,6 +542,9 @@ Cell_state Board_cellAvailableValue(int index, Board *b) {
             state = THREE;
           } else {
             //TODO: Gamble for state
+            if (rand() % X > (X/2)) {
+              state = THREE;
+            }
           }
           break;
         case 3:
@@ -542,6 +552,9 @@ Cell_state Board_cellAvailableValue(int index, Board *b) {
             state = FOUR;
           } else {
             //TODO: Gamble for state
+            if (rand() % X > (X/2)) {
+              state = FOUR;
+            }
           }
           break;
         case 4:
@@ -549,6 +562,9 @@ Cell_state Board_cellAvailableValue(int index, Board *b) {
             state = FIVE;
           } else {
             //TODO: Gamble for state
+            if (rand() % X > (X/2)) {
+              state = FIVE;
+            }
           }
           break;
         case 5:
@@ -556,6 +572,9 @@ Cell_state Board_cellAvailableValue(int index, Board *b) {
             state = SIX;
           } else {
             //TODO: Gamble for state
+            if (rand() % X > (X/2)) {
+              state = SIX;
+            }
           }
           break;
         case 6:
@@ -563,6 +582,9 @@ Cell_state Board_cellAvailableValue(int index, Board *b) {
             state = SEVEN;
           } else {
             //TODO: Gamble for state
+            if (rand() % X > (X/2)) {
+              state = SEVEN;
+            }
           }
           break;
         case 7:
@@ -570,6 +592,9 @@ Cell_state Board_cellAvailableValue(int index, Board *b) {
             state = EIGHT;
           } else {
             //TODO: Gamble for state
+            if (rand() % X > (X/2)) {
+              state = EIGHT;
+            }
           }
           break;
         case 8:
@@ -577,6 +602,9 @@ Cell_state Board_cellAvailableValue(int index, Board *b) {
             state = NINE;
           } else {
             //TODO: Gamble for state
+            if (rand() % X > (X/2)) {
+              state = NINE;
+            }
           }
           break;
       }
@@ -596,7 +624,7 @@ void Board_update(Board *b) {
   int x, y;
   Cell_state cell;
 
-  printf("Updating board\n");
+
   
   for (x = 0; x < X; x++) {
     for (y = 0; y < Y; y++) {
@@ -618,7 +646,6 @@ void Board_update(Board *b) {
 void Board_applyUpdate(Board *b) {
   int i;
 
-  printf("Applying cell updates\n");
   for (i = 0; i < X*Y; i++) {
     if (b->deltaB[i] != NO_CHANGE) {
       //Uncommenting the following printf with slow the program down a LOT
@@ -651,15 +678,19 @@ int main(int argc, char *argv[]) {
 
   if (Board_isValid(b)) {
     timestep = 0;
+    srand(time(NULL));
     while (!Board_isSolved(b) && timestep < maxTimestep) {
       timestep++;
-      printf("==============\n   TIMESTEP  %2d\n==========\n", timestep);
+      //printf("==============\n   TIMESTEP  %2d\n==========\n", timestep);
       Board_update(b);
+      //printf("Updating board\n");
       Board_applyUpdate(b);
-      Board_print(b);
+      //printf("Applying cell updates\n");
+      //Board_print(b);
     }
     //printf("Board solved...\n");
-    //Board_print(b);
+    printf("%d Timesteps passed.\n", timestep);
+    Board_print(b);
   } else {
     fprintf(stderr, "Error: %s\n", "Board is invalid");
     Board_destroy(b);
