@@ -667,14 +667,14 @@ int main(int argc, char *argv[]) {
   }
 
   sscanf(argv[1], "%d", &maxTimestep);
-  printf("timestep is %d\n", maxTimestep);
+  //printf("timestep is %d\n", maxTimestep);
   if (maxTimestep < 1) {
     printf("Must specify a valid timestep!\n");
     return -1;
   }
 
   b = Board_create();
-  Board_print(b);
+  //Board_print(b);
 
   if (Board_isValid(b)) {
     timestep = 0;
@@ -689,8 +689,18 @@ int main(int argc, char *argv[]) {
       //Board_print(b);
     }
     //printf("Board solved...\n");
-    printf("%d Timesteps passed.\n", timestep);
-    Board_print(b);
+    if (timestep == maxTimestep) {
+      printf("M %d ", timestep);
+    } else {
+      printf(". %d ", timestep);
+    }
+    if (Board_isSolved(b)) {
+      printf("Solved.\n");
+    } else {
+      printf("Errors.\n");
+    }
+    //printf("%d Timesteps passed.\n", timestep);
+    //Board_print(b);
   } else {
     fprintf(stderr, "Error: %s\n", "Board is invalid");
     Board_destroy(b);
