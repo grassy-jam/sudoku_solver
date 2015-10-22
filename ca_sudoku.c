@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+void usage();
+
 #define X 9
 #define Y 9
 typedef struct Board {
@@ -113,10 +115,71 @@ void Board_destroy(Board *b) {
 void Board_print(Board *b) {
   int x, y;
   for (y = 0; y < Y; y++) {
+    if (y % 3 == 0) {
+      //printf("\n");
+      printf("|---+---+---|\n");
+    }
     for (x = 0; x < X; x++) {
-      printf("%d", b->B[cellIndex(x, y)]);
+      if (x == 0) {
+        printf("|");
+      }
+      switch(b->B[cellIndex(x, y)]) {
+        case ONE:
+        case R_ONE:
+          printf("1");
+          break;
+        case TWO:
+        case R_TWO:
+          printf("2");
+          break;
+        case THREE:
+        case R_THREE:
+          printf("3");
+          break;
+        case FOUR:
+        case R_FOUR:
+          printf("4");
+          break;
+        case FIVE:
+        case R_FIVE:
+          printf("5");
+          break;
+        case SIX:
+        case R_SIX:
+          printf("6");
+          break;
+        case SEVEN:
+        case R_SEVEN:
+          printf("7");
+          break;
+        case EIGHT:
+        case R_EIGHT:
+          printf("8");
+          break;
+        case NINE:
+        case R_NINE:
+          printf("9");
+          break;
+        case EMPTY:
+          printf(".");
+          break;
+        case ERROR:
+          printf("E");
+          break;
+        default:
+          printf("?");
+          break;
+      }
+      if (x % 3 == 2) {
+        printf("|");
+        continue;
+      }
+
     }
     printf("\n");
+    if (y == 8) {
+      printf("|---+---+---|\n");
+    }
   }
 }
 //Returns the value at the specified 1D index on the given board
@@ -178,14 +241,14 @@ Cell_state *Board_getCellNeighbourValues(int index, Board *b) {
   for (c = x+1; c < X; c++) {
     neighbourIndices[curr++] = cellIndex(c, y);
   }
-  printf("curr should be at 8, curr is %d\n", curr);
+  //printf("curr should be at 8, curr is %d\n", curr);
   for (r = 0; r < y; r++) {
     neighbourIndices[curr++] = cellIndex(x, r);
   }
   for (r = y+1; r < Y; r++) {
     neighbourIndices[curr++] = cellIndex(x, r);
   }
-  printf("curr should be at 16, curr is %d\n", curr);
+  //printf("curr should be at 16, curr is %d\n", curr);
   /*
     We find the SS neighbours by determining which cell index this
     cell is at, relative to its own neighbours, e.g. 0..8 in
@@ -276,14 +339,14 @@ Cell_state *Board_getCellNeighbourValues(int index, Board *b) {
     neighbourIndices[curr++] = index - 11;
     neighbourIndices[curr++] = index - 10;
   }
-  printf("curr should be 20, curr is %d\n", curr);
+  //printf("curr should be 20, curr is %d\n", curr);
 
 
   numFound = malloc(sizeof(int) * 9);
   for (i = 0; i < 9; i++) { numFound[i] = 0; }
 
   for (i = 0; i < n; i++) {
-    printf("A neighbour at index %d is %2d\n", neighbourIndices[i], b->B[neighbourIndices[i]]);
+    //printf("A neighbour at index %d is %2d\n", neighbourIndices[i], b->B[neighbourIndices[i]]);
     switch(b->B[neighbourIndices[i]]) {
       case ONE:
       case R_ONE:
@@ -340,11 +403,14 @@ int cellIsValid(int index, Board *b) {
   //neighbours will get memory allocated, we are responsible to free
   neighbours = Board_getCellNeighbourValues(index, b);
 
-  printf("This cell's neighbours are...\n");
+  /*
+  printf("Cell %d or (%d, %d)'s neighbours: ", index, index % X, index / X);
   for (i = 0; i < X; i++) {
-    printf("%d: %d, ", i+1, neighbours[i]);
+    if (neighbours[i] > 0)
+      printf("%d: %d, ", i+1, neighbours[i]);
   }
   printf("\n");
+  */
 
   if (!Board_cellIsWritable(index, b)) {
     return 1; //assume that it is valid, we can't change it anyways
@@ -403,7 +469,7 @@ int Board_isValid(Board *b) {
   int x, y;
   for (x = 0; x < X; x++) {
     for (y = 0; y < Y; y++) {
-      printf("Validating cell %d (%d, %d)\n", cellIndex(x, y), x, y);
+      //printf("Validating cell %d (%d, %d)\n", cellIndex(x, y), x, y);
       if (!cellIsValid(cellIndex(x, y), b)) {
         return 0;
       }
@@ -424,6 +490,7 @@ int Board_isSolved(Board *b) {
         //The board is not solved
         return 0;
       }
+      printf("Cell at index (%d, %d) is valid.\n", x, y);
     }
   }
 
@@ -554,6 +621,8 @@ void Board_applyUpdate(Board *b) {
   printf("Applying cell updates\n");
   for (i = 0; i < X*Y; i++) {
     if (b->deltaB[i] != NO_CHANGE) {
+      //Uncommenting the following printf with slow the program down a LOT
+      //printf("Changing %d->%d at index %d\n", b->B[i], b->deltaB[i], i);
       b->B[i] = b->deltaB[i];
       // Reset the update val
       b->deltaB[i] = NO_CHANGE;
@@ -561,20 +630,36 @@ void Board_applyUpdate(Board *b) {
   }
 }
 
-int main(void) {
+int main(int argc, char *argv[]) {
+  int timestep, maxTimestep;
   Board *b;
+
+  if (argc < 2) {
+    usage(argv[0]);
+    return -1;
+  }
+
+  sscanf(argv[1], "%d", &maxTimestep);
+  printf("timestep is %d\n", maxTimestep);
+  if (maxTimestep < 1) {
+    printf("Must specify a valid timestep!\n");
+    return -1;
+  }
 
   b = Board_create();
   Board_print(b);
 
   if (Board_isValid(b)) {
-    while (!Board_isSolved(b)) {
+    timestep = 0;
+    while (!Board_isSolved(b) && timestep < maxTimestep) {
+      timestep++;
+      printf("==============\n   TIMESTEP  %2d\n==========\n", timestep);
       Board_update(b);
       Board_applyUpdate(b);
-      break;
+      Board_print(b);
     }
-    printf("Board solved...\n");
-    Board_print(b);
+    //printf("Board solved...\n");
+    //Board_print(b);
   } else {
     fprintf(stderr, "Error: %s\n", "Board is invalid");
     Board_destroy(b);
@@ -584,4 +669,8 @@ int main(void) {
   Board_destroy(b);
 
   return 0;
+}
+
+void usage(char *exe) {
+  printf("USAGE\n=====\n    %s n_timesteps\n", exe);
 }
