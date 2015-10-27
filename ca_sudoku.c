@@ -2,13 +2,22 @@
 #include <stdlib.h>
 #include <time.h>
 
+typedef enum { false = 0, true } bool;
 void usage();
 
 #define X 9
 #define Y 9
+
+const int N_TODO = 2;
+char *TODO[] = {
+  "Fix Board_isSolved.",
+  "Fix Board_update."
+};
+
 typedef struct Board {
   int *B; //Will be an |X*Y| array, where each value represents a tile on the board
   int *deltaB; //Will be the updates to be applied to the array
+  bool *BPastValues; // Will be an X*Y * X array, where 0..8 represents belongs to B[0], and 9..15 belongs to B[1], etc., s.t. if BPastValues[6] is true, then B[0] has already tried that value
 } Board;
 
 typedef enum {
@@ -56,9 +65,27 @@ Board *Board_create() {
     0,0,0,0,5,0,1,0,0,
     0,0,0,0,0,0,0,0,0
   };
+  /*
+  //The following example board was found at
+  //  http://www.math.cornell.edu/~mec/Summer2009/meerkamp/Site/Solving_any_Sudoku_I_files/simple_alg_testpuzzle_comp.png
+  int B[X*Y] = {
+    2,9,6, 3,1,8, 5,7,4,
+    5,8,4, 9,7,2, 6,1,3,
+    0,1,3, 6,4,5, 2,8,9,
+    6,2,5, 8,9,7, 3,4,1,
+    9,3,1, 4,2,6, 8,5,7,
+    4,7,8, 5,3,1, 9,2,6,
+    1,6,7, 2,5,3, 4,9,8,
+    8,5,9, 7,6,4, 1,3,2,
+    3,4,2, 1,8,9, 7,6,5
+  };
+  */
 
   b = malloc(sizeof(Board));
   b->B = malloc(sizeof(int) * X * Y);
+  b->BPastValues = malloc(sizeof(bool) * X * Y * X);
+  //Initialize BPastValues
+  for (i = 0; i < X*Y*X; i++) { b->BPastValues = false; }
 
   //Initialize board (either with input board or all 0's)
   for (i = 0; i < X*Y; i++) {
@@ -111,6 +138,7 @@ void Board_destroy(Board *b) {
   if (b == NULL) return;
   free(b->B);
   free(b->deltaB);
+  free(b->BPastValues);
   free(b);
 }
 void Board_print(Board *b) {
@@ -259,7 +287,7 @@ Cell_state *Board_getCellNeighbourValues(int index, Board *b) {
     Given this index, we have the offsets for each of the neighbours
   */
   if (index == 0 || index == 3 || index == 6 ||
-      index == 17 || index == 30 || index == 33 ||
+      index == 27 || index == 30 || index == 33 ||
       index == 54 || index == 57 || index == 60) {
     //at index 0
     //check +10, +11, +19, +20
@@ -277,7 +305,7 @@ Cell_state *Board_getCellNeighbourValues(int index, Board *b) {
     neighbourIndices[curr++] = index + 17;
     neighbourIndices[curr++] = index + 19;
   } else if (index == 2 || index == 5 || index == 8 ||
-      index == 29 || index == 31 || index == 35 ||
+      index == 29 || index == 32 || index == 35 ||
       index == 56 || index == 59 || index == 62) {
     //at index 2
     //check +7, +8, +16, +17
@@ -341,6 +369,21 @@ Cell_state *Board_getCellNeighbourValues(int index, Board *b) {
     neighbourIndices[curr++] = index - 10;
   }
   //printf("curr should be 20, curr is %d\n", curr);
+  /*
+  if (index == 27) {
+    printf("Index %d's neighbour indices are:\n", index);
+    for (i = 0; i < n; i++) {
+      if (i == 0) {
+        printf("\nRow neighbours:\n");
+      } else if (i == 9) {
+        printf("\nCol neighbours:\n");
+      } else if (i == 16) {
+        printf("\nSS neighbours:\n");
+      }
+      printf("%2d (%d, %d)=%d\n", neighbourIndices[i], neighbourIndices[i] % 9, neighbourIndices[i] / 9, b->B[neighbourIndices[i]]);
+    }
+  }
+  */
 
 
   numFound = malloc(sizeof(int) * 9);
@@ -418,6 +461,7 @@ int cellIsValid(int index, Board *b) {
   }
   cell = Board_getCellValue(index, b);
   if (cell == ERROR) {
+    //printf("Cell at %2d (%d, %d) is an error state.\n", index, index % X, index / X);
     return 0; //an erroneous cell is not valid
   }
   // We iterate over the 9 count values in neighbours
@@ -425,6 +469,7 @@ int cellIsValid(int index, Board *b) {
     //i is the val, and neighbours[i] is the # of instances of i in this cell's neighbours
     if (neighbours[i] > 0) {
       // A cell is valid if it does not contain the same val as any of its neighbours
+      //printf("Checking this cell (val=%d) at %d's neighbour: there are %d %d's\n",b->B[index], index, neighbours[i], i+1);
       switch (i) {
         case 0:
           if (cell == ONE || cell == R_ONE) return 0;
@@ -460,6 +505,7 @@ int cellIsValid(int index, Board *b) {
   free(neighbours);
 
   // return true; this cell is valid
+  //printf("Cell at index %2d is valid\n", index);
   return 1;
 }
 
@@ -472,6 +518,7 @@ int Board_isValid(Board *b) {
     for (y = 0; y < Y; y++) {
       //printf("Validating cell %d (%d, %d)\n", cellIndex(x, y), x, y);
       if (!cellIsValid(cellIndex(x, y), b)) {
+        //printf("Cell at (%d, %d) is invalid.\n", x, y);
         return 0;
       }
     }
@@ -483,12 +530,14 @@ int Board_isValid(Board *b) {
 //Additionally, it will check if the board is valid
 //If both of these conditions are met, return 1 (true)
 //Otherwise, return 0
+//TODO: Fix
 int Board_isSolved(Board *b) {
   int x, y;
   for (x = 0; x < X; x++) {
     for (y = 0; y < Y; y++) {
       if (cellIsValid(cellIndex(x, y), b)) {
         //The board is not solved
+        printf("The cell at %2d (%d, %d) is invalid.\n", cellIndex(x, y), x, y);
         return 0;
       }
       printf("Cell at index (%d, %d) is valid.\n", x, y);
@@ -505,6 +554,15 @@ int Board_isSolved(Board *b) {
 //It goes through each available value and sets that as the state. If a state is already
 // set, it gambles, and may either keep that state or set it to the current avail value.
 //If no values are available, return ERROR Cell_state
+//TODO: Fix this function
+// Need to:
+//  - determine the available values
+//  - if there is 1 left, choose that
+//  - if there are multiple, then look
+//  at the list of past values, and
+//  choose the available value with
+//  the least amount of occurences.
+//  - if it is a tie, TODO
 Cell_state Board_cellAvailableValue(int index, Board *b) {
   int *neighbours;
   int i;
@@ -522,7 +580,7 @@ Cell_state Board_cellAvailableValue(int index, Board *b) {
             state = ONE;
           } else {
             //TODO: Gamble for state
-            if (rand() % X > (X/2)) {
+            if ((rand() * 1000 % X) + 1 != 1) {
               state = ONE;
             }
           }
@@ -532,7 +590,7 @@ Cell_state Board_cellAvailableValue(int index, Board *b) {
             state = TWO;
           } else {
             //TODO: Gamble for state
-            if (rand() % X > (X/2)) {
+            if ((rand() * 1000 % X) + 1 != 2) {
               state = TWO;
             }
           }
@@ -542,7 +600,7 @@ Cell_state Board_cellAvailableValue(int index, Board *b) {
             state = THREE;
           } else {
             //TODO: Gamble for state
-            if (rand() % X > (X/2)) {
+            if ((rand() * 1000 % X) + 1 != 3) {
               state = THREE;
             }
           }
@@ -552,7 +610,7 @@ Cell_state Board_cellAvailableValue(int index, Board *b) {
             state = FOUR;
           } else {
             //TODO: Gamble for state
-            if (rand() % X > (X/2)) {
+            if ((rand() * 1000 % X) + 1 != 4) {
               state = FOUR;
             }
           }
@@ -562,7 +620,7 @@ Cell_state Board_cellAvailableValue(int index, Board *b) {
             state = FIVE;
           } else {
             //TODO: Gamble for state
-            if (rand() % X > (X/2)) {
+            if ((rand() * 1000 % X) + 1 != 5) {
               state = FIVE;
             }
           }
@@ -572,7 +630,7 @@ Cell_state Board_cellAvailableValue(int index, Board *b) {
             state = SIX;
           } else {
             //TODO: Gamble for state
-            if (rand() % X > (X/2)) {
+            if ((rand() * 1000 % X) + 1 != 6) {
               state = SIX;
             }
           }
@@ -582,7 +640,7 @@ Cell_state Board_cellAvailableValue(int index, Board *b) {
             state = SEVEN;
           } else {
             //TODO: Gamble for state
-            if (rand() % X > (X/2)) {
+            if ((rand() * 1000 % X) + 1 != 7) {
               state = SEVEN;
             }
           }
@@ -592,7 +650,7 @@ Cell_state Board_cellAvailableValue(int index, Board *b) {
             state = EIGHT;
           } else {
             //TODO: Gamble for state
-            if (rand() % X > (X/2)) {
+            if ((rand() * 1000 % X) + 1 != 8) {
               state = EIGHT;
             }
           }
@@ -602,7 +660,7 @@ Cell_state Board_cellAvailableValue(int index, Board *b) {
             state = NINE;
           } else {
             //TODO: Gamble for state
-            if (rand() % X > (X/2)) {
+            if ((rand() * 1000 % X) + 1 != 9) {
               state = NINE;
             }
           }
@@ -658,8 +716,16 @@ void Board_applyUpdate(Board *b) {
 }
 
 int main(int argc, char *argv[]) {
+  int i;
   int timestep, maxTimestep;
   Board *b;
+
+  if (N_TODO > 0) {
+    for (i = 0; i < N_TODO; i++) {
+      printf("%s\n", TODO[i]);
+    }
+    return -1;
+  }
 
   if (argc < 2) {
     usage(argv[0]);
@@ -680,14 +746,18 @@ int main(int argc, char *argv[]) {
     timestep = 0;
     srand(time(NULL));
     while (!Board_isSolved(b) && timestep < maxTimestep) {
+      printf("==============\n   TIMESTEP  %2d\n==========\n", timestep);
+      Board_print(b);
       timestep++;
-      //printf("==============\n   TIMESTEP  %2d\n==========\n", timestep);
+
       Board_update(b);
       //printf("Updating board\n");
       Board_applyUpdate(b);
       //printf("Applying cell updates\n");
-      //Board_print(b);
+
     }
+    printf("==============\n   TIMESTEP  %2d\n==========\n", timestep);
+    Board_print(b);
     //printf("Board solved...\n");
     if (timestep == maxTimestep) {
       printf("M %d ", timestep);
@@ -700,8 +770,9 @@ int main(int argc, char *argv[]) {
       printf("Errors.\n");
     }
     //printf("%d Timesteps passed.\n", timestep);
-    //Board_print(b);
+    Board_print(b);
   } else {
+    Board_print(b);
     fprintf(stderr, "Error: %s\n", "Board is invalid");
     Board_destroy(b);
     return -1;
