@@ -1,6 +1,9 @@
 /* Sudoku Solver
    arrayHelpers.h
    Sept 4, 2015
+
+   NOTE: Right now the array helper functions have a size of 9
+   harcoded into them. We should change this.
 */
 
 #include "bool.h"

@@ -11,6 +11,7 @@ Cell *createCell(int val, int row, int col) {
   Cell *cell;
 
   cell = malloc(sizeof(Cell));
+
   cell->val = val;
   cell->possibleValues = NULL;
   cell->length = 0;
@@ -22,6 +23,8 @@ Cell *createCell(int val, int row, int col) {
 void destroyCell(Cell *cell) {
   int i;
 
-  free(cell->possibleValues);
+  if (cell->possibleValues != NULL) {
+    free(cell->possibleValues);
+  }
   free(cell);
 }
