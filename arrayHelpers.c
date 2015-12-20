@@ -3,6 +3,9 @@
    Sept 4, 2015
 */
 
+#include "arrayHelpers.h"
+#include <stdlib.h>
+
 /*
   Generic helpers
 */

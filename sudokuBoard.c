@@ -3,7 +3,7 @@
    Sept 4, 2015
 */
 
-include "sudokuBoard.h"
+#include "sudokuBoard.h"
 
 /*
   Board manipulation functions

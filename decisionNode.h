@@ -6,6 +6,8 @@
 #ifndef DNODE_H
 #define DNODE_H
 
+#include "cell.h"
+
 typedef struct DecisionNode {
   Cell *cell;
   struct DecisionNode *parent;

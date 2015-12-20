@@ -6,6 +6,7 @@
 #ifndef SUDOKU_BOARD_H
 #define SUDOKU_BOARD_H
 
+#include "bool.h"
 #include "cell.h"
 #include "cellPriorityQueue.h"
 #include "decisionTree.h"
